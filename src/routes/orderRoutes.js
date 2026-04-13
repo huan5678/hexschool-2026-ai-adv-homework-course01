@@ -2,9 +2,29 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database');
 const authMiddleware = require('../middleware/authMiddleware');
+const { generatePaymentFormHTML, queryTradeInfo, verifyCheckMacValue } = require('../utils/ecpay');
 
 const router = express.Router();
 
+// ECPay server notify (no auth required — called by ECPay server)
+router.post('/ecpay-notify', express.urlencoded({ extended: false }), (req, res) => {
+  const params = req.body;
+
+  if (!verifyCheckMacValue(params)) {
+    return res.send('0|CheckMacValue Error');
+  }
+
+  if (params.RtnCode === '1') {
+    const order = db.prepare('SELECT * FROM orders WHERE payment_trade_no = ?').get(params.MerchantTradeNo);
+    if (order && order.status === 'pending') {
+      db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('paid', order.id);
+    }
+  }
+
+  res.send('1|OK');
+});
+
+// All routes below require JWT auth
 router.use(authMiddleware);
 
 function generateOrderNo() {
@@ -413,6 +433,139 @@ router.patch('/:id/pay', (req, res) => {
     error: null,
     message: action === 'success' ? '付款成功' : '付款失敗'
   });
+});
+
+/**
+ * @openapi
+ * /api/orders/{id}/ecpay-payment:
+ *   post:
+ *     summary: 產生 ECPay 付款表單
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: ECPay 付款表單 HTML
+ *       400:
+ *         description: 訂單狀態不是 pending
+ *       404:
+ *         description: 訂單不存在
+ */
+router.post('/:id/ecpay-payment', (req, res) => {
+  const userId = req.user.userId;
+  const order = db.prepare('SELECT * FROM orders WHERE id = ? AND user_id = ?').get(req.params.id, userId);
+
+  if (!order) {
+    return res.status(404).json({ data: null, error: 'NOT_FOUND', message: '訂單不存在' });
+  }
+
+  if (order.status !== 'pending') {
+    return res.status(400).json({
+      data: null,
+      error: 'INVALID_STATUS',
+      message: '訂單狀態不是 pending，無法付款'
+    });
+  }
+
+  // Generate payment_trade_no (order_no without dashes, max 20 chars)
+  let paymentTradeNo = order.payment_trade_no;
+  if (!paymentTradeNo) {
+    paymentTradeNo = order.order_no.replace(/-/g, '');
+    db.prepare('UPDATE orders SET payment_trade_no = ? WHERE id = ?').run(paymentTradeNo, order.id);
+  }
+
+  const orderItems = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+
+  const html = generatePaymentFormHTML(order, paymentTradeNo, orderItems, baseUrl);
+
+  res.json({
+    data: { html },
+    error: null,
+    message: 'ECPay 付款表單已產生'
+  });
+});
+
+/**
+ * @openapi
+ * /api/orders/{id}/check-payment:
+ *   post:
+ *     summary: 查詢 ECPay 付款狀態
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 付款狀態查詢結果
+ *       400:
+ *         description: 尚未建立 ECPay 付款
+ *       404:
+ *         description: 訂單不存在
+ */
+router.post('/:id/check-payment', async (req, res) => {
+  const userId = req.user.userId;
+  const order = db.prepare('SELECT * FROM orders WHERE id = ? AND user_id = ?').get(req.params.id, userId);
+
+  if (!order) {
+    return res.status(404).json({ data: null, error: 'NOT_FOUND', message: '訂單不存在' });
+  }
+
+  if (!order.payment_trade_no) {
+    return res.status(400).json({
+      data: null,
+      error: 'VALIDATION_ERROR',
+      message: '此訂單尚未建立 ECPay 付款'
+    });
+  }
+
+  try {
+    const tradeInfo = await queryTradeInfo(order.payment_trade_no);
+
+    // Update order status based on TradeStatus
+    const tradeStatus = tradeInfo.TradeStatus;
+    let newStatus = order.status;
+    let message = '查詢成功';
+
+    if (tradeStatus === '1' && order.status === 'pending') {
+      newStatus = 'paid';
+      message = '付款成功';
+      db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('paid', order.id);
+    } else if (tradeStatus === '10200095' && order.status === 'pending') {
+      newStatus = 'failed';
+      message = '付款失敗';
+      db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('failed', order.id);
+    } else if (tradeStatus === '0') {
+      message = '尚未付款';
+    }
+
+    const updated = db.prepare('SELECT * FROM orders WHERE id = ?').get(order.id);
+    const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+
+    res.json({
+      data: { ...updated, items },
+      error: null,
+      message
+    });
+  } catch (e) {
+    console.error('ECPay query error:', e.message);
+    res.status(500).json({
+      data: null,
+      error: 'INTERNAL_ERROR',
+      message: '查詢付款狀態失敗'
+    });
+  }
 });
 
 module.exports = router;

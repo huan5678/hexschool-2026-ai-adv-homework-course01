@@ -55,6 +55,11 @@ router.get('/orders/:id', function (req, res) {
   });
 });
 
+// ECPay OrderResultURL — receives POST from ECPay after payment, redirects to order detail
+router.post('/orders/:id/payment-result', function (req, res) {
+  res.redirect(303, '/orders/' + req.params.id + '?payment=ecpay');
+});
+
 // Admin pages
 router.get('/admin/products', function (req, res) {
   renderAdmin(res, 'products', {
