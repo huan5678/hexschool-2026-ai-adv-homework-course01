@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <%- include('../partials/head') %>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-ink text-cream">
   <%- include('../partials/admin-header') %>
   <div class="flex flex-1">
     <%- include('../partials/admin-sidebar') %>
-    <main class="flex-1 p-8 bg-cream">
+    <main class="flex-1 p-8 md:p-12 bg-ink">
       <%- body %>
     </main>
   </div>
-  <%- include('../partials/footer') %>
   <%- include('../partials/notification') %>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

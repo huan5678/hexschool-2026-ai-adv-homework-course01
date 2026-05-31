@@ -1,0 +1,10 @@
+{
+  "browser": {
+    "contextOptions": {
+      "recordVideo": {
+        "dir": "/Users/sean/projects/2026-ai-adv-homework-course01/.playwright-mcp/videos",
+        "size": { "width": 1280, "height": 720 }
+      }
+    }
+  }
+}

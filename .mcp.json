@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--config",
+        "/Users/sean/projects/2026-ai-adv-homework-course01/.playwright-mcp/config.json",
+        "--output-dir",
+        "/Users/sean/projects/2026-ai-adv-homework-course01/.playwright-mcp",
+        "--viewport-size",
+        "1280x720"
+      ]
+    }
+  }
+}

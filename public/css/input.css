@@ -1,21 +1,97 @@
 @import "tailwindcss";
 
+/*
+ * 花漾生活 — 暗黑日式侘寂風設計系統 (Sumi Bloom)
+ * 對應 design.pen 的設計 token：暖墨黑底 + 和紙米白 + 柿色強調，零圓角、扁平、髮絲線分隔。
+ */
 @theme {
-  --color-rose-primary: #C4727F;
-  --color-rose-dark: #A85B67;
-  --color-rose-light: #E8A5AE;
-  --color-apricot: #D4956A;
-  --color-sage: #7EA584;
-  --color-cream: #FBF8F4;
-  --color-blush: #FFF1EC;
-  --color-rose-bg: #FDEAE4;
-  --color-text-primary: #2C2A28;
-  --color-text-secondary: #6B6560;
-  --color-text-muted: #9A948E;
+  /* 表面 / 背景 */
+  --color-ink: #1A1714;        /* 主背景，暖墨黑 */
+  --color-raised: #23201B;     /* 次表面 / 卡片 */
+  --color-paper: #E9E2D4;      /* 反白和紙區塊 */
+
+  /* 文字 */
+  --color-cream: #EBE4D6;      /* 暗底主文字（和紙米白） */
+  --color-mist: #A39C8E;       /* 次要文字 */
+  --color-ash: #6F675B;        /* 淡化文字 */
+  --color-sumi: #26221C;       /* 反白區塊上的文字 */
+
+  /* 強調與線條 */
+  --color-kaki: #C0603A;       /* 柿色／陶土，唯一強調色 */
+  --color-kaki-dark: #A84F2E;  /* 柿色 hover */
+  --color-hairline: #39342C;   /* 髮絲分隔線 */
+
+  /* 字型 */
+  --font-display: "Noto Serif TC", serif;        /* 品牌、中文大標 */
+  --font-serif: "Newsreader", "Noto Serif TC", serif; /* 拉丁襯線、引言 */
+  --font-cap: "Geist Mono", monospace;           /* 全大寫寬字距 metadata */
+  --font-body: "Noto Sans TC", sans-serif;       /* 內文 */
 }
 
-body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background-color: var(--color-cream);
-  color: var(--color-text-primary);
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+  }
+}
+
+@layer components {
+  /* eyebrow / 區塊編號標籤 */
+  .eyebrow {
+    font-family: var(--font-cap);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 12px;
+    color: var(--color-kaki);
+  }
+
+  /* 通用 caption（全大寫寬字距 wayfinding） */
+  .cap {
+    font-family: var(--font-cap);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+
+  /* 主要行動按鈕：柿色實心、近乎直角 */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-kaki text-cream font-body rounded-[3px] px-8 py-3.5 transition-colors;
+    letter-spacing: 0.12em;
+  }
+  .btn-primary:hover { background-color: var(--color-kaki-dark); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 次要按鈕：柿色描邊 */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border border-kaki text-kaki font-body rounded-[3px] px-8 py-3.5 transition-colors;
+    letter-spacing: 0.12em;
+  }
+  .btn-outline:hover { background-color: color-mix(in srgb, var(--color-kaki) 12%, transparent); }
+  .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 表單欄位：底線式輸入 */
+  .field-label {
+    @apply block font-cap text-[11px] text-mist mb-3;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .field-input {
+    @apply w-full bg-transparent border-b border-hairline pb-3 text-cream transition-colors;
+  }
+  .field-input::placeholder { color: var(--color-ash); }
+  .field-input:focus { outline: none; border-color: var(--color-kaki); }
+  .field-input.is-error { border-color: #B8553E; }
+
+  /* 數量步進器外框 */
+  .stepper { @apply inline-flex items-center border border-hairline; }
+  .stepper button {
+    @apply px-4 py-2.5 text-mist transition-colors;
+  }
+  .stepper button:hover { color: var(--color-cream); }
+  .stepper .stepper-num {
+    @apply px-5 py-2.5 text-cream border-x border-hairline min-w-[3rem] text-center;
+  }
 }

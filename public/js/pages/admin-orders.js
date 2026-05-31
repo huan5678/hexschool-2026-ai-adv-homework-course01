@@ -12,10 +12,17 @@ createApp({
     const detailLoading = ref(false);
 
     const statusMap = {
-      pending: { label: '待付款', cls: 'bg-yellow-100 text-yellow-800' },
-      paid: { label: '已付款', cls: 'bg-green-100 text-green-800' },
-      failed: { label: '付款失敗', cls: 'bg-red-100 text-red-800' },
+      pending: { label: '待付款', cls: 'text-mist border-hairline' },
+      paid: { label: '已付款', cls: 'text-kaki border-kaki' },
+      failed: { label: '付款失敗', cls: 'text-[#B8553E] border-[#B8553E]' },
     };
+
+    const statusOptions = [
+      { label: '全部', value: '' },
+      { label: '待付款', value: 'pending' },
+      { label: '已付款', value: 'paid' },
+      { label: '付款失敗', value: 'failed' },
+    ];
 
     async function loadOrders(page) {
       page = page || 1;
@@ -58,7 +65,7 @@ createApp({
     return {
       orders, pagination, loading, statusFilter,
       detailVisible, detailOrder, detailLoading,
-      statusMap, loadOrders, viewDetail
+      statusMap, statusOptions, loadOrders, viewDetail
     };
   }
 }).mount('#app');

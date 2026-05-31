@@ -38,3 +38,14 @@ coverage/
 
 .claude/*.local.json
 public/css/output.css
+
+# 驗證用截圖（非 E2E 證據）
+verify-*.jpeg
+home-full.jpeg
+
+# Playwright MCP 暫存快照與錄製檔
+.playwright-mcp/*.yml
+.playwright-mcp/*.log
+.playwright-mcp/*.zip
+.playwright-mcp/traces/
+.playwright-mcp/videos/

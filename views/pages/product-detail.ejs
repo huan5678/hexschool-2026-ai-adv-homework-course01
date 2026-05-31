@@ -1,76 +1,78 @@
 <div id="app" data-product-id="<%= productId %>">
-  <div v-if="loading" class="flex justify-center py-12">
-    <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+  <div v-if="loading" class="flex justify-center py-24">
+    <div class="w-8 h-8 border border-kaki border-t-transparent rounded-full animate-spin"></div>
   </div>
 
-  <div v-else-if="notFound" class="text-center py-16">
-    <div class="text-5xl mb-4">&#127804;</div>
-    <h2 class="text-xl font-medium text-text-primary mb-2">找不到此商品</h2>
-    <a href="/" class="text-rose-primary hover:text-rose-dark text-sm">回到首頁</a>
+  <div v-else-if="notFound" class="text-center py-24 max-w-[1100px] mx-auto px-6 md:px-14">
+    <p class="cap text-[11px] text-ash mb-4">404 &mdash; NOT FOUND</p>
+    <h2 class="font-display text-3xl text-cream mb-4">找不到此商品</h2>
+    <a href="/" class="btn-outline">回到首頁</a>
   </div>
 
-  <div v-else-if="product" class="flex flex-col md:flex-row gap-8 md:gap-12">
+  <div v-else-if="product" class="flex flex-col md:flex-row">
     <!-- Left: Image -->
-    <div class="md:w-1/2">
-      <div class="rounded-2xl overflow-hidden shadow-sm">
-        <img
-          :src="product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=600'"
-          :alt="product.name"
-          class="w-full aspect-square object-cover"
-        />
-      </div>
+    <div class="md:w-1/2 bg-raised">
+      <img
+        :src="product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=600'"
+        :alt="product.name"
+        class="w-full h-[480px] md:h-[760px] lg:h-[860px] object-cover"
+      />
     </div>
 
     <!-- Right: Info -->
-    <div class="md:w-1/2">
-      <h1 class="text-2xl md:text-3xl font-bold text-text-primary mb-2" style="font-family: 'Noto Serif TC', serif;">
+    <div class="md:w-1/2 px-8 md:px-16 py-12 flex flex-col">
+      <!-- Breadcrumb -->
+      <p class="cap text-[11px] text-ash mb-8">所有花藝 / {{ product.name }}</p>
+
+      <!-- Name -->
+      <h1 class="font-display text-4xl md:text-5xl text-cream leading-tight mb-5">
         {{ product.name }}
       </h1>
-      <p class="text-3xl text-rose-primary font-bold mb-4">NT$ {{ product.price.toLocaleString() }}</p>
 
-      <div class="mb-6">
-        <span class="text-sage text-sm">&#10003; 尚有 {{ product.stock }} 件</span>
+      <!-- Price -->
+      <p class="font-serif text-3xl text-kaki mb-6">NT$ {{ product.price.toLocaleString() }}</p>
+
+      <!-- Stock -->
+      <div class="flex items-center gap-2 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-kaki"></span>
+        <span class="cap text-[12px] text-mist">現貨 &middot; 尚有 {{ product.stock }} 件</span>
       </div>
 
-      <p class="text-text-secondary leading-relaxed mb-6">{{ product.description }}</p>
+      <!-- Description -->
+      <p class="text-mist leading-loose mb-8">{{ product.description }}</p>
+
+      <!-- Divider -->
+      <div class="border-t border-hairline pt-8"></div>
 
       <!-- Quantity Selector -->
-      <div class="flex items-center gap-4 mb-6">
-        <span class="text-sm text-text-secondary">數量</span>
-        <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-          <button
-            @click="decrease"
-            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-text-secondary transition-colors"
-          >
-            -
-          </button>
-          <span class="w-12 h-10 flex items-center justify-center text-sm border-x border-gray-200">
-            {{ quantity }}
-          </span>
-          <button
-            @click="increase"
-            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-text-secondary transition-colors"
-          >
-            +
-          </button>
+      <div class="flex items-center gap-6 mb-8">
+        <span class="cap text-[11px] text-mist">數量</span>
+        <div class="stepper">
+          <button @click="decrease">&minus;</button>
+          <span class="stepper-num">{{ quantity }}</span>
+          <button @click="increase">+</button>
         </div>
       </div>
 
-      <button
-        @click="addToCart"
-        :disabled="adding || product.stock <= 0"
-        class="w-full bg-rose-primary text-white py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition-colors disabled:opacity-50"
-      >
-        {{ product.stock <= 0 ? '已售完' : '加入購物車' }}
-      </button>
+      <!-- CTA -->
+      <div class="flex flex-col sm:flex-row gap-4 mb-12">
+        <button
+          @click="addToCart"
+          :disabled="adding || product.stock <= 0"
+          class="btn-primary flex-1"
+        >
+          {{ product.stock <= 0 ? '已售完' : '加入購物車' }}
+        </button>
+        <a href="/cart" class="btn-outline flex-1">直接結帳</a>
+      </div>
 
       <!-- Purchase Notes -->
-      <div class="mt-8 bg-blush rounded-xl p-5">
-        <h3 class="font-medium text-text-primary mb-2 text-sm">購買須知</h3>
-        <ul class="text-text-muted text-xs space-y-1.5">
-          <li>- 花材依據季節供應，實際花束可能略有差異</li>
-          <li>- 台北市區可享當日配送服務</li>
-          <li>- 消費滿 NT$ 500 享免運優惠</li>
+      <div class="border-t border-hairline pt-8">
+        <h3 class="cap text-[11px] text-kaki mb-4">購買須知 / NOTES</h3>
+        <ul class="text-ash text-sm leading-loose space-y-1">
+          <li>— 花材依據季節供應，實際花束可能略有差異</li>
+          <li>— 台北市區可享當日配送服務</li>
+          <li>— 消費滿 NT$ 500 享免運優惠</li>
         </ul>
       </div>
     </div>

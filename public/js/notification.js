@@ -6,13 +6,13 @@ const Notification = {
     if (!el) return;
 
     const colors = {
-      success: 'bg-sage text-white',
-      error: 'bg-red-500 text-white',
-      warning: 'bg-apricot text-white',
-      info: 'bg-gray-700 text-white'
+      success: 'bg-raised text-cream border border-kaki',
+      error: 'bg-raised text-cream border border-[#B8553E]',
+      warning: 'bg-raised text-cream border border-hairline',
+      info: 'bg-raised text-cream border border-hairline'
     };
 
-    el.className = 'fixed top-20 right-4 z-[100] px-5 py-3 rounded-xl shadow-lg text-sm transition-all duration-300 ' + (colors[type] || colors.info);
+    el.className = 'fixed top-24 right-6 z-[100] px-5 py-3 rounded-[3px] shadow-lg text-sm transition-all duration-300 ' + (colors[type] || colors.info);
     el.textContent = message;
     el.style.display = 'block';
     el.style.opacity = '1';
